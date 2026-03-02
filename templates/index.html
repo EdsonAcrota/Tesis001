@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Diseño de Columnas RC</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 24px; background: #f5f7fb; }
+    .card { background: #fff; border-radius: 10px; padding: 18px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,.08); }
+    h1, h2 { margin-top: 0; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; }
+    label { font-size: 13px; color: #333; display: block; }
+    input, select { width: 100%; padding: 8px; margin-top: 4px; }
+    button { background: #0d6efd; color: #fff; border: none; padding: 10px 14px; border-radius: 8px; cursor: pointer; }
+    table { border-collapse: collapse; width: 100%; font-size: 13px; }
+    th, td { border: 1px solid #ddd; padding: 6px; text-align: right; }
+    th { background: #f0f3f8; }
+    .error { color: #b00020; font-weight: bold; }
+  </style>
+</head>
+<body>
+  <h1>Aplicación Web: Diseño de Columnas Uniaxial/Biaxial</h1>
+
+  <form method="post" class="card">
+    <h2>Datos de entrada</h2>
+    <div class="grid">
+      <label>f'c (MPa)<input name="fc" value="28" /></label>
+      <label>fy (MPa)<input name="fy" value="420" /></label>
+      <label>Es (MPa)<input name="Es" value="200000" /></label>
+      <label>phi<input name="phi" value="0.65" /></label>
+
+      <label>b (mm)<input name="b" value="400" /></label>
+      <label>h (mm)<input name="h" value="400" /></label>
+      <label>Recubrimiento (mm)<input name="recubrimiento" value="40" /></label>
+      <label>k<input name="k" value="1.0" /></label>
+      <label>lu (mm)<input name="lu" value="3000" /></label>
+      <label>r (mm)<input name="r" value="115" /></label>
+      <label>Arriostrada
+        <select name="arriostrada">
+          <option value="si">Sí</option>
+          <option value="no">No</option>
+        </select>
+      </label>
+
+      <label>M1 (Nmm)<input name="M1" value="40000000" /></label>
+      <label>M2 (Nmm)<input name="M2" value="90000000" /></label>
+      <label>Pu (N)<input name="Pu" value="1200000" /></label>
+      <label>Mu (Nmm)<input name="Mu" value="120000000" /></label>
+
+      <label>Número de barras<input name="n_barras" value="4" /></label>
+      <label>As por barra (mm²)<input name="As_barra" value="600" /></label>
+      <label>d superior (mm)<input name="d_sup" value="60" /></label>
+      <label>d inferior (mm)<input name="d_inf" value="340" /></label>
+    </div>
+    <p style="margin-top:14px;"><button type="submit">Calcular</button></p>
+  </form>
+
+  {% if error %}
+  <div class="card error">{{ error }}</div>
+  {% endif %}
+
+  {% if resultado %}
+  <div class="card">
+    <h2>Resultados principales</h2>
+    <p><b>Esbeltez:</b> klu/r = {{ '%.3f'|format(resultado.esbeltez.klu_r) }}, límite = {{ '%.3f'|format(resultado.esbeltez.limite) }}, esbelta = {{ resultado.esbeltez.esbelta }}</p>
+    <p><b>Cuantía:</b> ρ = {{ '%.4f'|format(resultado.cuantia.rho) }}, cumple = {{ resultado.cuantia.cumple }}</p>
+    <p><b>D/C:</b> {% if resultado.dc is not none %}{{ '%.4f'|format(resultado.dc) }}{% else %}No calculable{% endif %}</p>
+    <p><b>Capacidad (Pn, Mn):</b> {{ resultado.capacidad }}</p>
+  </div>
+
+  <div class="card">
+    <h2>Primeros 10 puntos del diagrama (diseño)</h2>
+    <table>
+      <thead>
+        <tr><th>#</th><th>c</th><th>phiPn</th><th>phiMn</th></tr>
+      </thead>
+      <tbody>
+      {% for p in resultado.diagrama %}
+        <tr>
+          <td>{{ loop.index }}</td>
+          <td>{{ '%.2f'|format(p.c) }}</td>
+          <td>{{ '%.2f'|format(p.phiPn) }}</td>
+          <td>{{ '%.2f'|format(p.phiMn) }}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+</body>
+</html>
